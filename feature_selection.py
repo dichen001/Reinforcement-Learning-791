@@ -1,6 +1,7 @@
 import collections
 import numpy as np
-import pandas
+import pandas as pd
+from itertools import permutations
 import mdptoolbox, mdptoolbox.example
 import argparse
 
@@ -10,6 +11,7 @@ def generate_MDP_input2(original_data, features):
     students_variables = ['student', 'priorTutorAction', 'reward']
 
     # generate distinct state based on feature
+    # shitian's code is too slow for converting into strings.
     # original_data['state'] = original_data[features].apply(lambda x: ':'.join(str(v) for v in x), axis=1)
     original_data['state'] = original_data[features].apply(tuple, axis=1)
     students_variables = students_variables + ['state']
@@ -79,6 +81,7 @@ def output_policy(distinct_acts, distinct_states, vi):
         # print(distinct_states[s] + " -> " + distinct_acts[vi.policy[s]] + ", " + str(vi.V[s]))
         print(str(distinct_states[s]) + " -> " + distinct_acts[vi.policy[s]] + ", " + str(vi.V[s]))
 
+
 def induce_policy_MDP2(original_data, selected_features):
 
     [start_states, A, expectR, distinct_acts, distinct_states] = generate_MDP_input2(original_data, selected_features)
@@ -96,9 +99,69 @@ def induce_policy_MDP2(original_data, selected_features):
     return ECR_value
 
 
+def pct_rank_qcut(series, n):
+    edges = pd.Series([float(i) / n for i in range(n + 1)])
+    f = lambda x: (edges >= x).argmax()
+    return series.rank(pct=1).apply(f)
+
+
 if __name__ == "__main__":
 
     # original_data = pandas.read_csv('MDP_training_data.csv')
-    original_data = pandas.read_csv('MDP_Original_data.csv')
+    od = pd.read_csv('MDP_Original_data.csv')
+    headers = list(od.columns.values)
+    staticHeader, allFeatures = headers[:6], headers[6:]
+    for f in allFeatures:
+        if type(od.loc[0, f]) == type(np.float64(1.11)):
+            # discretize
+            bins = min(100, len(od[f].unique()))
+            # print f + ':\t' + str(bins)
+            # od[f] = pct_rank_qcut(od[f], bins)
+            od[f] = pd.cut(od[f], bins, right=True, labels=range(bins))
+
+    IterNum, limit = 10, 8
+    record = {}
+    for i in range(IterNum):
+        unseen = set(allFeatures)
+        selected_features = []
+        prior_ECR = 0
+        print 'iteration ' + str(i)
+        while unseen:
+            # random add one
+            selected_features += [unseen.pop()]
+            cur_ECR = induce_policy_MDP2(od, selected_features)
+            # no improvement, jump
+            if cur_ECR < prior_ECR:
+                print 'jump ' + selected_features[-1]
+                selected_features.pop()
+                continue
+            # improved --> add!
+            elif len(selected_features) > limit:
+                print 'overlimit'
+                # over the limit of features, find one to abandon!
+                for j, sf in enumerate(selected_features):
+                    tmp_removed_features = selected_features[0:j] + selected_features[j+1:]
+                    tmp_ECR = induce_policy_MDP2(od, tmp_removed_features)
+                    # found the one to abandon
+                    if tmp_ECR > cur_ECR:
+                        print 'remove '  + sf
+                        selected_features = tmp_removed_features
+                        cur_ECR = tmp_ECR
+                        break
+                # can't find one to abandon to improve the ECR
+                if j >= limit:
+                    print 'can\'t find one to abandon'
+                    break
+                    # another strategy is to abondon the lowest ECR
+            print 'add ' + selected_features[-1]
+            prior_ECR = cur_ECR
+        record[', '.join(selected_features)] = prior_ECR
+
+
+
+
+
+
+
     selected_features = ['Level', 'probDiff']
-    ECR_value = induce_policy_MDP2(original_data, selected_features)
+    ECR_value = induce_policy_MDP2(od, selected_features)
