@@ -1,6 +1,7 @@
 import collections
 import numpy as np
 import pandas as pd
+import pandas.core.algorithms as algos
 from itertools import permutations
 import mdptoolbox, mdptoolbox.example
 import argparse
@@ -113,16 +114,34 @@ def pct_rank_qcut(series, n):
     return series.rank(pct=1).apply(f)
 
 
+# def discretization(features, data, bins=10):
+#     for f in allFeatures:
+#         if len(data[f].unique()) > bins:
+#             data[f] = pd.cut(data[f], bins, right=True, labels=range(bins))
+#         # if type(data.loc[0, f]) == type(np.float64(1.11)):
+#         #     # discretize
+#         #     bins = min(10, len(data[f].unique()))
+#         #     # print f + ':\t' + str(bins)
+#         #     # od[f] = pct_rank_qcut(od[f], bins)
+#         #     data[f] = pandas.cut(data[f], bins, right=True, labels=range(bins))
+
+
+
 def discretization(features, data, bins=10):
     for f in allFeatures:
-        if len(data[f].unique()) > bins:
-            data[f] = pd.cut(data[f], bins, right=True, labels=range(bins))
-        # if type(data.loc[0, f]) == type(np.float64(1.11)):
-        #     # discretize
-        #     bins = min(10, len(data[f].unique()))
-        #     # print f + ':\t' + str(bins)
-        #     # od[f] = pct_rank_qcut(od[f], bins)
-        #     data[f] = pandas.cut(data[f], bins, right=True, labels=range(bins))
+        uniques = data[f].unique()
+        l = len(uniques)
+        if l > bins:
+            # data[f] = pandas.cut(data[f], bins, labels=range(bins))
+            # data[f] = pandas.qcut(data[f] + jitter(data[f]), 2, labels=range(2))
+            ranges = algos.quantile(uniques, np.linspace(0, 1, 3))
+            result = pd.tools.tile._bins_to_cuts(data[f], ranges, include_lowest=True)
+            print result.value_counts()
+            range_names = list(result.values.unique())
+            data[f]= result.apply(lambda x : range_names.index(x))
+            # print '\n' + f
+            # print result.value_counts()
+
 
 
 if __name__ == "__main__":
@@ -133,19 +152,21 @@ if __name__ == "__main__":
     staticHeader, allFeatures = headers[:6], headers[6:]
 
     # discretization
-    discretization(allFeatures, od, bins=10)
+    discretization(allFeatures, od)
 
     IterNum, limit = 20, 8
     record = {}
     for i in range(IterNum):
         shuffle(allFeatures)
         unseen = allFeatures[:]
-        selected_features = []
-        prior_ECR = 0
+        selected_features = ['difficultProblemCountSolved']
+        prior_ECR = induce_policy_MDP2(od, selected_features)
         print 'iteration ' + str(i)
         while unseen:
             # random add one
             random_f = unseen.pop()
+            if random_f in selected_features:
+                continue
             print 'checking random feature:\t' + random_f
             selected_features += [random_f]
             cur_ECR = induce_policy_MDP2(od, selected_features)
@@ -181,7 +202,7 @@ if __name__ == "__main__":
             print 'add ' + selected_features[-1]
             prior_ECR = cur_ECR
         record[', '.join(selected_features)] = prior_ECR
-        print '\n---------------------------------------------'
+        print '\n-------------------- Binary -------------------------'
         print 'ECR for this iteration: ' + str(prior_ECR)
         print 'Selected features:\n' + str(selected_features)
         print '---------------------------------------------\n\n'

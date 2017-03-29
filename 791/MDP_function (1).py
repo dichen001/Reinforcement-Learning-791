@@ -2,9 +2,11 @@ import collections
 import numpy as np
 import pandas
 import pandas.core.algorithms as algos
+
 import mdptoolbox, mdptoolbox.example
 import argparse
 import operator
+import pickle
 
 def generate_MDP_input2(original_data, features):
 
@@ -109,7 +111,7 @@ def discretization(features, data, bins=10):
         if l > bins:
             # data[f] = pandas.cut(data[f], bins, labels=range(bins))
             # data[f] = pandas.qcut(data[f] + jitter(data[f]), 2, labels=range(2))
-            ranges = algos.quantile(uniques, np.linspace(0, 1, bins))
+            ranges = algos.quantile(uniques, np.linspace(0, 1, 3))
             result = pandas.tools.tile._bins_to_cuts(data[f], ranges, include_lowest=True)
             range_names = list(result.values.unique())
             data[f]= result.apply(lambda x : range_names.index(x))
@@ -136,14 +138,18 @@ if __name__ == "__main__":
     headers = list(original_data.columns.values)
     staticHeader, allFeatures = headers[:6], headers[6:]
 
-    discretization(allFeatures, original_data, bins=10)
+    discretization(allFeatures, original_data)
 
     ## feature selection
     selected = []
     rankings = [0]*8
     sorted_x = [0]*8
-    for i in range(8):
-        print '\n************ selecting feature ' + str(i) + ' ************'
+    rankings[0] = pickle.load(open('feature_rankings.pkl', 'rb'))
+    sorted_x[0] = sorted(rankings[0].items(), key=operator.itemgetter(1))
+    selected += [sorted_x[0][-1][0]]
+    print 'Selected Features: ' + selected[-1]
+    for i in range(1,8):
+        print '\n************ selecting feature ' + str(i+1) + ' ************'
         rankings[i] = {}
         # No.6 feature has bug for OverflowError
         for f in allFeatures:
@@ -157,5 +163,3 @@ if __name__ == "__main__":
         print 'current ECR: ' + str(sorted_x[i][-1][1])
     print '\n@@@@@@@@@@@ Selected Features @@@@@@@@@@@'
     print selected
-
-
