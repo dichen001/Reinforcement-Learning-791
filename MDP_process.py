@@ -16,7 +16,8 @@ def generate_MDP_input(filename):
     features = feature_name[start_Fidx: len(feature_name)]
 
     # generate distinct state based on feature
-    original_data['state'] = original_data[features].apply(lambda x : ':'.join(str(v) for v in x), axis=1)
+    # original_data['state'] = original_data[features].apply(lambda x: ':'.join(str(v) for v in x), axis=1)
+    original_data['state'] = original_data[features].apply(tuple, axis=1)
     students_variables = students_variables + ['state']
     data = original_data[students_variables]
 
@@ -65,6 +66,8 @@ def generate_MDP_input(filename):
             expectR[np.isnan(expectR)] = 0
 
         # each column will sum to 1 for each row, obtain the state transition table
+        for l in np.where(np.sum(A[act], axis=1) == 0)[0]:
+            A[act][l][l] = 1
         A[act] = np.divide(A[act].transpose(), np.sum(A[act], axis=1))
         A[act] = A[act].transpose()
 
@@ -79,7 +82,8 @@ def output_policy(distinct_acts, distinct_states, vi):
     print('Policy: ')
     print('state -> action, value-function')
     for s in range(Ns):
-        print(distinct_states[s]+ " -> " + distinct_acts[vi.policy[s]] + ", "+str(vi.V[s]))
+        # print(distinct_states[s] + " -> " + distinct_acts[vi.policy[s]] + ", " + str(vi.V[s]))
+        print(str(distinct_states[s]) + " -> " + distinct_acts[vi.policy[s]] + ", " + str(vi.V[s]))
 
 def induce_policy_MDP():
 

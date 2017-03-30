@@ -129,7 +129,6 @@ def discretization(features, data, thre=10, bins=2):
 
 if __name__ == "__main__":
 
-    # original_data = pandas.read_csv('MDP_training_data.csv')
     original_data = pandas.read_csv('MDP_Original_data.csv')
     # selected_features = ['Level', 'probDiff']
     # ECR_value = induce_policy_MDP2(original_data, selected_features)
@@ -137,11 +136,17 @@ if __name__ == "__main__":
     headers = list(original_data.columns.values)
     staticHeader, allFeatures = headers[:6], headers[6:]
 
-
+    # ECR = 352.22255655
     # selected_features = ['difficultProblemCountSolved', 'cumul_F1Score', 'cumul_PreviousStepClickCountWE', 'cumul_TotalTime', 'ruleScoreDN', 'ruleScoreEQUIV', 'ruleScoreHS', 'ruleScoreTAUT']
+    # ECR = 409.989749288
     selected_features = ['cumul_TotalPSTime', 'difficultProblemCountSolved', 'ruleScoreEQUIV', 'F1Score', 'ruleScoreIMPL', 'ruleScoreSIMP', 'cumul_NextStepClickCountWE', 'SeenWEinLevel']
+    discretization(selected_features, original_data, thre=10, bins=2)
+    # ECR = induce_policy_MDP2(original_data, selected_features)
 
-    threshold, bins = range(2, 20, 2), range(2, 20, 2)
+    # training_data = original_data[staticHeader+selected_features].copy()
+    # training_data.to_csv('MDP_training_data.csv')
+
+    threshold, bins = range(2, 6, 1), range(2, 7, 1)
     performances = {}
     for t in threshold:
         for b in bins:
@@ -150,6 +155,7 @@ if __name__ == "__main__":
             ECR = induce_policy_MDP2(test_data, selected_features)
             performances['-'.join([str(t),str(b)])] = ECR
             print 'threshold:\t' + str(t) + '\tbins:\t' + str(b) + '\tECR:\t' + str(ECR)
+    pandas.DataFrame.from_dict(performances).to_csv('discretization_results_compare.csv')
     print 'done!'
 
 
