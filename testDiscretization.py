@@ -138,8 +138,9 @@ if __name__ == "__main__":
     staticHeader, allFeatures = headers[:6], headers[6:]
 
 
+    # selected_features = ['difficultProblemCountSolved', 'cumul_F1Score', 'cumul_PreviousStepClickCountWE', 'cumul_TotalTime', 'ruleScoreDN', 'ruleScoreEQUIV', 'ruleScoreHS', 'ruleScoreTAUT']
+    selected_features = ['cumul_TotalPSTime', 'difficultProblemCountSolved', 'ruleScoreEQUIV', 'F1Score', 'ruleScoreIMPL', 'ruleScoreSIMP', 'cumul_NextStepClickCountWE', 'SeenWEinLevel']
 
-    selected_features = ['difficultProblemCountSolved', 'cumul_F1Score', 'cumul_PreviousStepClickCountWE', 'cumul_TotalTime', 'ruleScoreDN', 'ruleScoreEQUIV', 'ruleScoreHS', 'ruleScoreTAUT']
     threshold, bins = range(2, 20, 2), range(2, 20, 2)
     performances = {}
     for t in threshold:
