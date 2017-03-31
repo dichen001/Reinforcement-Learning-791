@@ -105,7 +105,7 @@ def jitter(a_series, noise_reduction=1000000):
 
 
 def discretization(features, data, bins=10):
-    for f in allFeatures:
+    for f in features:
         uniques = data[f].unique()
         l = len(uniques)
         if l > bins:
@@ -140,15 +140,16 @@ if __name__ == "__main__":
 
     discretization(allFeatures, original_data)
 
+    # get best ECR
+    # selected_features = ['cumul_TotalPSTime', 'difficultProblemCountSolved', 'ruleScoreEQUIV', 'F1Score', 'ruleScoreIMPL', 'ruleScoreSIMP', 'cumul_NextStepClickCountWE', 'SeenWEinLevel']
+    # Best_ECR_value = induce_policy_MDP2(original_data, selected_features)
+
+
     ## feature selection policy
     LIMIT = 8
     selected = []
     rankings = [0]*LIMIT
     sorted_x = [0]*LIMIT
-    # rankings[0] = pickle.load(open('feature_rankings.pkl', 'rb'))
-    # sorted_x[0] = sorted(rankings[0].items(), key=operator.itemgetter(1))
-    # selected += [sorted_x[0][-1][0]]
-    # print 'Selected Features: ' + selected[-1]
     for i in range(LIMIT):
         print '\n************ selecting feature: ' + str(i+1) + ' ************'
         rankings[i] = {}
