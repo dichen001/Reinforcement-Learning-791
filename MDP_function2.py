@@ -151,23 +151,70 @@ if __name__ == "__main__":
 
     discretization(allFeatures, original_data)
 
-    ## feature selection policy
-    LIMIT = 8
-    selected = []
-    rankings = [0]*LIMIT
-    sorted_x = [0]*LIMIT
-    for i in range(LIMIT):
-        print '\n************ selecting feature: ' + str(i+1) + ' ************'
-        rankings[i] = {}
-        for f in allFeatures:
-            if f in selected:
-                continue
-            ECR = induce_policy_MDP2(original_data, selected + [f])
-            rankings[i][f] = ECR
-        sorted_x[i] = sorted(rankings[i].items(), key=operator.itemgetter(1))
-        selected += [sorted_x[i][-1][0]]
-        print 'Selected Features: ' + selected[-1]
-        print 'current ECR: ' + str(sorted_x[i][-1][1])
-    print '\n@@@@@@@@@@@ Selected Features @@@@@@@@@@@'
-    print selected
-    print 'done'
+    # ## feature selection policy
+    # LIMIT = 8
+    # selected = []
+    # rankings = [0]*LIMIT
+    # sorted_x = [0]*LIMIT
+    # for i in range(LIMIT):
+    #     print '\n************ selecting feature: ' + str(i+1) + ' ************'
+    #     rankings[i] = {}
+    #     for f in allFeatures:
+    #         if f in selected:
+    #             continue
+    #         ECR = induce_policy_MDP2(original_data, selected + [f])
+    #         rankings[i][f] = ECR
+    #     sorted_x[i] = sorted(rankings[i].items(), key=operator.itemgetter(1))
+    #     selected += [sorted_x[i][-1][0]]
+    #     print 'Selected Features: ' + selected[-1]
+    #     print 'current ECR: ' + str(sorted_x[i][-1][1])
+    # print '\n@@@@@@@@@@@ Selected Features @@@@@@@@@@@'
+    # print selected
+    # print 'done'
+
+    # ## try features after 5 selected
+    # LIMIT = 8
+    # selected = ['probDiff', 'Level', 'SolvedPSInLevel', 'cumul_avgstepTimeWE', 'cumul_TotalWETime']
+    # rankings = [0] * LIMIT
+    # sorted_x = [0] * LIMIT
+    # for i in range(5, LIMIT):
+    #     print '\n************ selecting feature: ' + str(i + 1) + ' ************'
+    #     rankings[i] = {}
+    #     for f in allFeatures:
+    #         if f in selected:
+    #             continue
+    #         ECR = induce_policy_MDP2(original_data, selected + [f])
+    #         rankings[i][f] = ECR
+    #     sorted_x[i] = sorted(rankings[i].items(), key=operator.itemgett er(1))
+    #     selected += [sorted_x[i][-1][0]]
+    #     print 'Selected Features: ' + selected[-1]
+    #     print 'current ECR: ' + str(sorted_x[i][-1][1])
+    # print '\n@@@@@@@@@@@ Selected Features @@@@@@@@@@@'
+    # print selected
+    # print 'done'
+
+
+    ## try to replace current combination with a better choice
+    count = 0
+    rankings = [] * 20
+    sorted_x = [0] * 20
+    currentECR = 136.410583032
+    selected = ['probDiff', 'Level', 'SolvedPSInLevel', 'cumul_avgstepTimeWE', 'cumul_TotalWETime', 'stepTimeDeviation', 'ruleScoreDN', 'cumul_F1Score']
+    print 'current ECR: ' + str(currentECR)
+    while True:
+        print '\n************ Attempt to Remove from ' + str(8 - count) + ' features ************'
+        post_ECRs = []
+        for i, f in enumerate(selected):
+            ECR = induce_policy_MDP2(original_data, selected[:i] + selected[i+1:])
+            post_ECRs += [(f, ECR)]
+            print 'ECR after removing \t[' + f + ']:\t\t' + str(ECR)
+        post_ECRs.sort(key=lambda x:x[1])
+        new_ECR = post_ECRs[-1][1]
+        # try all ECRs after removing the feature with minimum effects
+        print '\nchoose to remove \t[' + post_ECRs[-1][0] + '], the left ECR:\t' + str(new_ECR)
+        print '\n************ testing feature round: ' + str(count + 1) + ' ************'
+        if currentECR - new_ECR >= 10:
+            break
+
+
+
