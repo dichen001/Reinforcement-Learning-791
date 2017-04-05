@@ -194,27 +194,60 @@ if __name__ == "__main__":
     # print 'done'
 
 
-    ## try to replace current combination with a better choice
-    count = 0
-    rankings = [] * 20
-    sorted_x = [0] * 20
-    currentECR = 136.410583032
+    # ## try to replace current combination with a better choice
+    # count = 0
+    # rankings = [] * 20
+    # sorted_x = [0] * 20
+    # currentECR = 136.410583032
+    # selected = ['probDiff', 'Level', 'SolvedPSInLevel', 'cumul_avgstepTimeWE', 'cumul_TotalWETime', 'stepTimeDeviation', 'ruleScoreDN', 'cumul_F1Score']
+    # print 'current ECR: ' + str(currentECR)
+    # while True:
+    #     print '\n************ Attempt to Remove from ' + str(8 - count) + ' features ************'
+    #     post_ECRs = []
+    #     for i, f in enumerate(selected):
+    #         ECR = induce_policy_MDP2(original_data, selected[:i] + selected[i+1:])
+    #         post_ECRs += [(f, ECR)]
+    #         print 'ECR after removing \t[' + f + ']:\t\t' + str(ECR)
+    #     post_ECRs.sort(key=lambda x:x[1])
+    #     new_ECR = post_ECRs[-1][1]
+    #     # try all ECRs after removing the feature with minimum effects
+    #     print '\nchoose to remove \t[' + post_ECRs[-1][0] + '], the left ECR:\t' + str(new_ECR)
+    #     print '\n************ testing feature round: ' + str(count + 1) + ' ************'
+    #     if currentECR - new_ECR >= 10:
+    #         break
+
+
+
+    bestECR = 136.410583032
     selected = ['probDiff', 'Level', 'SolvedPSInLevel', 'cumul_avgstepTimeWE', 'cumul_TotalWETime', 'stepTimeDeviation', 'ruleScoreDN', 'cumul_F1Score']
-    print 'current ECR: ' + str(currentECR)
-    while True:
-        print '\n************ Attempt to Remove from ' + str(8 - count) + ' features ************'
-        post_ECRs = []
-        for i, f in enumerate(selected):
-            ECR = induce_policy_MDP2(original_data, selected[:i] + selected[i+1:])
-            post_ECRs += [(f, ECR)]
-            print 'ECR after removing \t[' + f + ']:\t\t' + str(ECR)
-        post_ECRs.sort(key=lambda x:x[1])
-        new_ECR = post_ECRs[-1][1]
-        # try all ECRs after removing the feature with minimum effects
-        print '\nchoose to remove \t[' + post_ECRs[-1][0] + '], the left ECR:\t' + str(new_ECR)
-        print '\n************ testing feature round: ' + str(count + 1) + ' ************'
-        if currentECR - new_ECR >= 10:
-            break
+    # for each feature selected, try to remove from the begining and see if we could find a better one.
+    for i, feature in enumerate(selected):
+        print '\n************ Attempt to Remove the NO.' + str(i + 1) + ' feature: [' + feature + '] ************'
+        tmp_selected = selected[:i] + selected[i+1:]
+        rankings = {}
+        for f in allFeatures:
+            if f in tmp_selected:
+                continue
+            ECR = induce_policy_MDP2(original_data, tmp_selected + [f])
+            rankings[f] = ECR
+        sorted_x = sorted(rankings.items(), key=operator.itemgetter(1))
+        highFeature = sorted_x[-1][0]
+        highECR = sorted_x[-1][1]
+        print 'The highest ECR after removing No.' + str(i) + ' feature: ' + str(highECR)
+        if highECR > bestECR:
+            print '---- Replace [' + feature + '] with [' + highFeature + '] ----'
+            print '---- ECR gets improved from ' + str(bestECR) + ' to ' + str(highECR)
+            bestECR = highECR
+            selected[i] = highFeature
+        else:
+            print '==== Cannot find a better feature to replace the No.' + str(i) + ' feature'
+
+    print '\n+++++++++++++++++++++++++++++++++++++++'
+    print 'The current ECR is ' + str(bestECR)
+    print 'The selected features are:'
+    print selected
+
+
 
 
 
