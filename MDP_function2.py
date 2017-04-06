@@ -218,8 +218,10 @@ if __name__ == "__main__":
 
 
 
-    bestECR = 136.410583032
-    selected = ['probDiff', 'Level', 'SolvedPSInLevel', 'cumul_avgstepTimeWE', 'cumul_TotalWETime', 'stepTimeDeviation', 'ruleScoreDN', 'cumul_F1Score']
+    # bestECR = 136.410583032
+    # selected = ['probDiff', 'Level', 'SolvedPSInLevel', 'cumul_avgstepTimeWE', 'cumul_TotalWETime', 'stepTimeDeviation', 'ruleScoreDN', 'cumul_F1Score']
+    selected = ['probDiff', 'Level', 'TotalTime', 'cumul_avgstepTimeWE', 'cumul_TotalWETime', 'cumul_TotalPSTime', 'stepTimeDeviation', 'difficultProblemCountSolved']
+    bestECR = induce_policy_MDP2(original_data, selected)
     # for each feature selected, try to remove from the begining and see if we could find a better one.
     for i, feature in enumerate(selected):
         print '\n************ Attempt to Remove the NO.' + str(i + 1) + ' feature: [' + feature + '] ************'
@@ -246,6 +248,7 @@ if __name__ == "__main__":
     print 'The current ECR is ' + str(bestECR)
     print 'The selected features are:'
     print selected
+    print 'done!'
 
 
 
