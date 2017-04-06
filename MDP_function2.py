@@ -151,7 +151,7 @@ if __name__ == "__main__":
 
     discretization(allFeatures, original_data)
 
-    # ## feature selection policy
+    # ## feature selection policy [exploration part]
     # LIMIT = 8
     # selected = []
     # rankings = [0]*LIMIT
@@ -217,10 +217,10 @@ if __name__ == "__main__":
     #         break
 
 
-
+    # policy, step 2 [exploitation part]
     # bestECR = 136.410583032
     # selected = ['probDiff', 'Level', 'SolvedPSInLevel', 'cumul_avgstepTimeWE', 'cumul_TotalWETime', 'stepTimeDeviation', 'ruleScoreDN', 'cumul_F1Score']
-    selected = ['probDiff', 'Level', 'TotalTime', 'cumul_avgstepTimeWE', 'cumul_TotalWETime', 'cumul_TotalPSTime', 'stepTimeDeviation', 'difficultProblemCountSolved']
+    selected = ['ruleScoreEXP', 'Level', 'TotalTime', 'cumul_avgstepTimeWE', 'cumul_TotalWETime', 'cumul_TotalPSTime', 'stepTimeDeviation', 'difficultProblemCountSolved']
     bestECR = induce_policy_MDP2(original_data, selected)
     # for each feature selected, try to remove from the begining and see if we could find a better one.
     for i, feature in enumerate(selected):

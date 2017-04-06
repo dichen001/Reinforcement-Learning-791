@@ -8,7 +8,6 @@ import pandas.core.algorithms as algos
 
 
 def generate_MDP_input2(original_data, features):
-
     students_variables = ['student', 'priorTutorAction', 'reward']
 
     # generate distinct state based on feature
@@ -40,8 +39,8 @@ def generate_MDP_input2(original_data, features):
 
     # we include terminal state
     start_states = np.zeros(Ns + 1)
-    A = np.zeros((Nx, Ns+1, Ns+1))
-    expectR = np.zeros((Nx, Ns+1, Ns+1))
+    A = np.zeros((Nx, Ns + 1, Ns + 1))
+    expectR = np.zeros((Nx, Ns + 1, Ns + 1))
 
     # update table values episode by episode
     # each episode is a student data set
@@ -53,7 +52,7 @@ def generate_MDP_input2(original_data, features):
         start_states[distinct_states.index(student_data.loc[row_list[0], 'state'])] += 1
 
         # count the number of transition among states without terminal state
-        for i in range(1, (len(row_list)-1)):
+        for i in range(1, (len(row_list) - 1)):
             state1 = distinct_states.index(student_data.loc[row_list[i - 1], 'state'])
             state2 = distinct_states.index(student_data.loc[row_list[i], 'state'])
             act = student_data.loc[row_list[i], 'priorTutorAction']
@@ -104,7 +103,6 @@ def output_policy(distinct_acts, distinct_states, vi):
 
 
 def induce_policy_MDP2(original_data, selected_features):
-
     [start_states, A, expectR, distinct_acts, distinct_states] = generate_MDP_input2(original_data, selected_features)
 
     # apply Value Iteration to run the MDP
@@ -131,7 +129,10 @@ def discretization(features, data, thre=10, bins=2):
             result = pandas.tools.tile._bins_to_cuts(data[f], ranges, include_lowest=True)
             # print result.value_counts()
             range_names = list(result.values.unique())
-            data[f]= result.apply(lambda x : range_names.index(x))
+            # print result.values._codes == result.apply(lambda x : range_names.index(x))
+            # data[f]= result.apply(lambda x : range_names.index(x))
+            data[f] = result.values._codes
+
             # print '\n' + f
             # print result.value_counts()
 
@@ -146,7 +147,7 @@ def discretization(features, data, thre=10, bins=2):
 
 if __name__ == "__main__":
 
-    original_data = pandas.read_csv('MDP_Original_data.csv')
+    original_data = pandas.read_csv('MDP_Original_data2.csv')
     # selected_features = ['Level', 'probDiff']
     # ECR_value = induce_policy_MDP2(original_data, selected_features)
 
@@ -155,7 +156,7 @@ if __name__ == "__main__":
 
     # ECR = 431.117813627
     selected_features = ['ruleScoreEXP', 'Level', 'TotalTime', 'cumul_avgstepTimeWE', 'cumul_TotalWETime', 'cumul_TotalPSTime', 'stepTimeDeviation', 'difficultProblemCountSolved']
-    discretization(selected_features, original_data, thre=10, bins=2)
+    # discretization(selected_features, original_data, thre=10, bins=2)
     # ECR = induce_policy_MDP2(original_data, selected_features)
 
     # training_data = original_data[staticHeader+selected_features].copy()
@@ -170,6 +171,8 @@ if __name__ == "__main__":
             ECR = induce_policy_MDP2(test_data, selected_features)
             performances['-'.join([str(t),str(b)])] = ECR
             print 'threshold:\t' + str(t) + '\tbins:\t' + str(b) + '\tECR:\t' + str(ECR)
+    for k, v in performances.iteritems():
+        performances[k] = [v]
     pandas.DataFrame.from_dict(performances).to_csv('discretization_results_compare2.csv')
     print 'done!'
 
