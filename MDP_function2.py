@@ -151,26 +151,27 @@ if __name__ == "__main__":
 
     discretization(allFeatures, original_data)
 
-    # ## feature selection policy [exploration part]
-    # LIMIT = 8
-    # selected = []
-    # rankings = [0]*LIMIT
-    # sorted_x = [0]*LIMIT
-    # for i in range(LIMIT):
-    #     print '\n************ selecting feature: ' + str(i+1) + ' ************'
-    #     rankings[i] = {}
-    #     for f in allFeatures:
-    #         if f in selected:
-    #             continue
-    #         ECR = induce_policy_MDP2(original_data, selected + [f])
-    #         rankings[i][f] = ECR
-    #     sorted_x[i] = sorted(rankings[i].items(), key=operator.itemgetter(1))
-    #     selected += [sorted_x[i][-1][0]]
-    #     print 'Selected Features: ' + selected[-1]
-    #     print 'current ECR: ' + str(sorted_x[i][-1][1])
-    # print '\n@@@@@@@@@@@ Selected Features @@@@@@@@@@@'
-    # print selected
-    # print 'done'
+    ## feature selection policy [exploration part]
+    print 'Stage 1: Exploration'
+    LIMIT = 8
+    selected = []
+    rankings = [0]*LIMIT
+    sorted_x = [0]*LIMIT
+    for i in range(LIMIT):
+        print '\n************ selecting feature: ' + str(i+1) + ' ************'
+        rankings[i] = {}
+        for f in allFeatures:
+            if f in selected:
+                continue
+            ECR = induce_policy_MDP2(original_data, selected + [f])
+            rankings[i][f] = ECR
+        sorted_x[i] = sorted(rankings[i].items(), key=operator.itemgetter(1))
+        selected += [sorted_x[i][-1][0]]
+        print 'Selected Features: ' + selected[-1]
+        print 'current ECR: ' + str(sorted_x[i][-1][1])
+    print '\n@@@@@@@@@@@ Selected Features @@@@@@@@@@@'
+    print selected
+    print 'Exploration part done！'
 
     # ## try features after 5 selected
     # LIMIT = 8
@@ -220,7 +221,10 @@ if __name__ == "__main__":
     # policy, step 2 [exploitation part]
     # bestECR = 136.410583032
     # selected = ['probDiff', 'Level', 'SolvedPSInLevel', 'cumul_avgstepTimeWE', 'cumul_TotalWETime', 'stepTimeDeviation', 'ruleScoreDN', 'cumul_F1Score']
-    selected = ['ruleScoreEXP', 'Level', 'TotalTime', 'cumul_avgstepTimeWE', 'cumul_TotalWETime', 'cumul_TotalPSTime', 'stepTimeDeviation', 'difficultProblemCountSolved']
+    # selected = ['ruleScoreEXP', 'Level', 'TotalTime', 'cumul_avgstepTimeWE', 'cumul_TotalWETime', 'cumul_TotalPSTime', 'stepTimeDeviation', 'difficultProblemCountSolved']
+
+
+    print 'Stage 2: Exploitation'
     bestECR = induce_policy_MDP2(original_data, selected)
     # for each feature selected, try to remove from the begining and see if we could find a better one.
     for i, feature in enumerate(selected):
@@ -248,7 +252,7 @@ if __name__ == "__main__":
     print 'The current ECR is ' + str(bestECR)
     print 'The selected features are:'
     print selected
-    print 'done!'
+    print 'Exploitatioin part done!'
 
 
 
